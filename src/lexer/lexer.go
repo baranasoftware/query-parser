@@ -1,10 +1,16 @@
 package lexer
 
+import "fmt"
+
 type TokenType string
 
 type Token struct {
 	Type    TokenType
 	Literal string
+}
+
+func (t Token) Print() {
+	fmt.Printf("[type: %s, literal: %s]", t.Type, t.Literal)
 }
 
 func newToken(tokenType TokenType, ch byte) Token {
