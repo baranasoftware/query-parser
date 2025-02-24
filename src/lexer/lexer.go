@@ -10,11 +10,15 @@ type Token struct {
 }
 
 func (t Token) Print() {
-	fmt.Printf("[type: %s, literal: %s]", t.Type, t.Literal)
+	fmt.Printf("[type: %s, literal: %s]\n", t.Type, t.Literal)
 }
 
 func newToken(tokenType TokenType, ch byte) Token {
 	return Token{Type: tokenType, Literal: string(ch)}
+}
+
+func newTokenFromLiteral(tokenType TokenType, literal string) Token {
+	return Token{tokenType, literal}
 }
 
 const (
@@ -93,6 +97,17 @@ func (l *Lexer) NextToken() Token {
 	switch l.ch {
 	case '?':
 		tok = newToken(ParamStart, l.ch)
+	case '=':
+		tok = newToken(Equals, l.ch)
+	case '(':
+		tok = newToken(LeftParenthesis, l.ch)
+	case ')':
+		tok = newToken(RightParenthesis, l.ch)
+	case '\000': // eof
+		tok = newToken(Eof, ' ')
+	case '\'':
+		quoted := l.readQuoted()
+		tok = newTokenFromLiteral(Quote, quoted)
 	default:
 		if isLetter(l.ch) { // either identifier or keyword - /users?filter=equals(displayName,'Brian O''Connor')
 			tok.Literal = l.readIdentifier()
@@ -103,6 +118,14 @@ func (l *Lexer) NextToken() Token {
 	}
 	l.readChar()
 	return tok
+}
+
+func (l *Lexer) readQuoted() string {
+	position := l.position
+	for l.peekChar() != '\'' {
+		l.readChar()
+	}
+	return l.input[position:l.position]
 }
 
 func (l *Lexer) readIdentifier() string {
