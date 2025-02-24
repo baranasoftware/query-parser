@@ -33,7 +33,6 @@ const (
 	LeftParenthesis  = "("
 	RightParenthesis = ")"
 	Comma            = ","
-	Quote            = "'"
 	Slash            = "/"
 
 	Equals         = "equals"
@@ -71,7 +70,6 @@ func lookUpIdentifier(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
-
 	return Identifier
 }
 
@@ -84,7 +82,6 @@ type Lexer struct {
 
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
-
 	l.readChar()
 	return l
 }
@@ -107,13 +104,15 @@ func (l *Lexer) NextToken() Token {
 		tok = newToken(Eof, ' ')
 	case '\'':
 		quoted := l.readQuoted()
-		tok = newTokenFromLiteral(Quote, quoted)
+		tok = newTokenFromLiteral(Identifier, quoted)
 	default:
 		if isLetter(l.ch) { // either identifier or keyword - /users?filter=equals(displayName,'Brian O''Connor')
 			tok.Literal = l.readIdentifier()
 			tok.Type = lookUpIdentifier(tok.Literal)
+			return tok
 		} else {
 			tok = newToken(Illegal, l.ch)
+			return tok
 		}
 	}
 	l.readChar()
